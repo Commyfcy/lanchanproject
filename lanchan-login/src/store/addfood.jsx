@@ -111,7 +111,7 @@ function MenuForm() {
           <Grid item xs={12} sm={6}>
             <TextField
               select
-              label="ประเภทซุป"
+              label="ประเภท"
               name="soupType"
               value={formData.soupType}
               onChange={handleChange}

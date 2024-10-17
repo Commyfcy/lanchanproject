@@ -17,7 +17,7 @@ import Addex from './store/addex.jsx'
 import Addnoodlemeu from './store/addnoodlemenu.jsx'
 import Noodlemenudetail from './store/noodledetail.jsx'
 import Addem from './employee/addem.jsx'
-import Chechin from './checkbin/checkbin.jsx'
+import Checkbin from './checkbin/checkbin.jsx'
 import Noodletype from './store/noodletype.jsx'
 import Souptype from './store/souptype.jsx'
 import Orderpage from './order/order.jsx'
@@ -28,6 +28,7 @@ import History from './order/orderhistory.jsx'
 import SERVE from './order/orderserve.jsx'
 import SERVEDETAIL from './order/servedetail.jsx'
 import HISTORYDETAIL from './order/historydetail.jsx'
+import TABLE from './table/table.jsx'
 
 
 
@@ -105,7 +106,7 @@ root.render(
       } />
       <Route path="/checkbin" element={
         <ProtectedRoute allowedRoles={['owner']}>
-          <Chechin />
+          <Checkbin />
         </ProtectedRoute>
       } />
 
@@ -160,6 +161,11 @@ root.render(
       <Route path="/historydetail/:id" element={
         <ProtectedRoute allowedRoles={['owner', 'manager', 'employee']}>
           <HISTORYDETAIL />
+        </ProtectedRoute>
+      } />
+      <Route path="/table" element={
+        <ProtectedRoute allowedRoles={['owner', 'manager', 'employee']}>
+          <TABLE />
         </ProtectedRoute>
       } />
 

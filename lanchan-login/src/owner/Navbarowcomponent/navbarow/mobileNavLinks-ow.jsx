@@ -83,8 +83,7 @@ export function MobileNavLinks(props) {
         <LinkItem><Link href="#">หน้าหลัก</Link></LinkItem>
         <LinkItem><Link href="./history">ประวัติออเดอร์</Link></LinkItem>
         <LinkItem><Link href="checkbin">ชำระเงิน</Link></LinkItem>
-        <LinkItem><Link href="./order">ดูรายการอาหารที่สั่ง</Link></LinkItem>
-        <LinkItem><Link href="/serve">ดูรายการอาหารที่ทำเสร็จแล้ว</Link></LinkItem>
+        <LinkItem><Link href="./order">ดูรายการอาหารที่สั่ง</Link></LinkItem> 
         <LinkItem><Link href="./dashborad/Dashboard">รายงาน</Link></LinkItem>
         <LinkItem><Link href="./menupage">รายการอาหาร</Link></LinkItem>
         <LinkItem><Link href="#">Association</Link></LinkItem>

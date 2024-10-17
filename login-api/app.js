@@ -109,7 +109,7 @@ app.post('/addmenu', upload.single('Menu_picture'), (req, res) => {
 });
 
 app.get('/getmenu', (req, res) => {
-  connection.query('SELECT * FROM menu WHERE is_active = TRUE', (err, results) => {
+  connection.query('SELECT * FROM menu', (err, results) => {
     if (err) {
       console.error('Error fetching menu items:', err);
       res.status(500).json({ error: 'Internal server error' });
@@ -117,7 +117,7 @@ app.get('/getmenu', (req, res) => {
     }
     const processedResults = results.map(item => ({
       ...item,
-      Menu_picture: item.Menu_picture.toString('base64')
+      Menu_picture: item.Menu_picture ? item.Menu_picture.toString('base64') : null
     }));
     res.json(processedResults);
   });
@@ -316,21 +316,23 @@ app.delete('/deleteemployee/:id', (req, res) => {
 
 
 
-app.put('/deletemenu/:id', (req, res) => {
+app.delete('/deletemenu/:id', (req, res) => {
   const menuId = req.params.id;
-  const query = 'UPDATE menu SET is_active = FALSE WHERE Menu_id = ?';
+  const query = 'DELETE FROM menu WHERE Menu_id = ?';
 
   connection.execute(query, [menuId], (error, results) => {
     if (error) {
-      console.error('Error soft deleting menu:', error);
-      return res.status(500).json({ status: 'error', message: 'An error occurred while soft deleting the menu' });
+      console.error('Error deleting menu:', error);
+      res.status(500).json({ status: 'error', message: 'An error occurred while deleting the menu' });
+      return;
     }
 
     if (results.affectedRows === 0) {
-      return res.status(404).json({ status: 'error', message: 'Menu not found' });
+      res.status(404).json({ status: 'error', message: 'Menu not found' });
+      return;
     }
 
-    res.json({ status: 'ok', message: 'Menu soft deleted successfully' });
+    res.json({ status: 'ok', message: 'Menu deleted successfully' });
   });
 });
 
@@ -811,28 +813,28 @@ app.put('/updateorderstatustoserved/:id', (req, res) => {
   });
 });
 
-app.get('/getfullyservedorders', (req, res) => {
+app.get('/getserveoder', (req, res) => {
   const query = `
     SELECT o.*, 
-           COUNT(od.Order_detail_id) AS total_items
+           COUNT(od.Order_detail_id) AS total_items,
+           SUM(CASE WHEN od.Order_detail_status = 'เสิร์ฟเเล้ว' THEN 1 ELSE 0 END) AS preparing_items
     FROM \`order\` o
     JOIN order_detail od ON o.Order_id = od.Order_id
     GROUP BY o.Order_id
-    HAVING COUNT(od.Order_detail_id) = SUM(CASE WHEN od.Order_detail_status = 'เสิร์ฟแล้ว' THEN 1 ELSE 0 END)
+    HAVING preparing_items > 0
     ORDER BY o.Order_datetime DESC
   `;
-
+  
   connection.query(query, (error, results) => {
     if (error) {
-      console.error('Error fetching fully served orders:', error);
-      res.status(500).json({ error: 'An error occurred while fetching fully served orders' });
+      console.error('Error fetching preparing orders:', error);
+      res.status(500).json({ error: 'An error occurred while fetching preparing orders' });
       return;
     }
 
     res.json(results);
   });
 });
-
 
 app.get('/getpreparingorders', (req, res) => {
   const query = `
@@ -856,6 +858,96 @@ app.get('/getpreparingorders', (req, res) => {
     res.json(results);
   });
 });
+
+
+app.put('/updateorderpayment/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+  const { paymentMethod } = req.body;
+
+  try {
+    // Update the order status to "ชำระเงินเรียบร้อย"
+    const updateQuery = `
+      UPDATE \`order\`
+      SET Order_status = 'ชำระเงินเรียบร้อย', Order_status = ?
+      WHERE Order_id = ?
+    `;
+
+    const [result] = await connection.promise().query(updateQuery, [paymentMethod, orderId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.status(200).json({ message: 'Order payment status updated successfully' });
+  } catch (error) {
+    console.error('Error updating order payment status:', error);
+    res.status(500).json({ error: 'An error occurred while updating the order payment status' });
+  }
+});
+
+
+
+app.get('/table', (req, res) => {
+  connection.query('SELECT * FROM tables', (err, results) => {
+    if (err) {
+      console.error('Error fetching tables:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+app.post('/table', (req, res) => {
+  const { tables_number, tables_status } = req.body;
+
+  // Ensure that tables_id is the same as tables_number
+  const query = 'INSERT INTO tables (tables_id, tables_number, tables_status) VALUES (?, ?, ?)';
+
+  connection.execute(query, [tables_number, tables_number, tables_status], (err, results) => {
+    if (err) {
+      console.error('Error inserting table:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    res.status(201).json({ message: 'Table added successfully', id: tables_number });
+  });
+});
+
+
+app.put('/table/:id', (req, res) => {
+  const { id } = req.params;
+  const { tables_number, tables_status } = req.body;
+  const query = 'UPDATE tables SET tables_number = ?, tables_status = ? WHERE tables_id = ?';
+  connection.execute(query, [tables_number, tables_status, id], (err, results) => {
+    if (err) {
+      console.error('Error updating table:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Table not found' });
+    }
+    res.json({ message: 'Table updated successfully' });
+  });
+});
+
+app.delete('/table/:id', (req, res) => {
+  const { id } = req.params;
+  const query = 'DELETE FROM tables WHERE tables_id = ?';
+  connection.execute(query, [id], (err, results) => {
+    if (err) {
+      console.error('Error deleting table:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Table not found' });
+    }
+    res.json({ message: 'Table deleted successfully' });
+  });
+});
+
 /*
 app.use((err, req, res, next) => {
   console.error(err.stack);

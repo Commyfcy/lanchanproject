@@ -44,6 +44,8 @@ const Link = styled.a`
 
 export function NavLinks(props) {
   return (
+
+  
     <NavLinksContainer>
       <LinksWrapper>
         <LinkItem>
@@ -53,14 +55,12 @@ export function NavLinks(props) {
           <Link href="./history">ประวัติออเดอร์</Link>
         </LinkItem>
         <LinkItem>
-            <Link href="checkbin">ชำระเงิน</Link>
+            <Link href="/checkbin">ชำระเงิน</Link>
           </LinkItem>
           <LinkItem>
             <Link href="./order">ดูรายการอาหารที่สั่ง</Link>
           </LinkItem>
-          <LinkItem>
-            <Link href="/serve">ดูรายการอาหารที่ทำเสร็จเเล้ว</Link>
-          </LinkItem>
+         
         <LinkItem>
           <Link href="./dashborad/Dashboard">รายงาน</Link>
         </LinkItem>
@@ -72,7 +72,7 @@ export function NavLinks(props) {
         </LinkItem>
 
         <LinkItem>
-            <Link href="./employee">โต๊ะ</Link>
+            <Link href="./table">โต๊ะ</Link>
           </LinkItem>
       </LinksWrapper>
     </NavLinksContainer>

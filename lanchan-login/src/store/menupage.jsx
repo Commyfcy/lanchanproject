@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Navbarow } from "../owner/Navbarowcomponent/navbarow/index-ow"
+import { Navbarow } from "../owner/Navbarowcomponent/navbarow/index-ow";
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';;
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = {
 
@@ -71,7 +71,6 @@ const styles = {
     },
   },
 };
-//ปุ่มเพิ่มเมนูต่างๆ///////////////////////////////////////
 function Abbmenu() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '5px' }}>
@@ -79,6 +78,7 @@ function Abbmenu() {
     </div>
   );
 }
+
 function Abbnoodle() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '5px' }}>
@@ -86,18 +86,6 @@ function Abbnoodle() {
     </div>
   );
 }
-
-///////////////////////////////////////////////////////////////////////////////////
-
-function DeleteImenu({ onDelete }) {
-  return (
-    <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
-      <Button variant="outlined" startIcon={<DeleteIcon />} onClick={onDelete}>ลบเมนู</Button>
-    </div>
-  );
-}
-
-
 
 function Basket() {
   const [menuItems, setMenuItems] = useState([]);
@@ -108,8 +96,6 @@ function Basket() {
   const [noodleTypes, setNoodleTypes] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-;
-
 
   const fetchAllData = async () => {
     try {
@@ -119,8 +105,6 @@ function Basket() {
         fetch('http://localhost:3333/meats'),
         fetch('http://localhost:3333/noodletypes')
       ]);
-
-      
 
       const [soupData, sizeData, meatData, noodleTypeData] = await Promise.all([
         soupRes.json(),
@@ -149,16 +133,14 @@ function Basket() {
     fetchNoodleMenuItems();
     fetchAllData();
     fetchMenuItems();
-    
   }, []);
-  //สำหรับดึงค่าจากตารางเมนู/////////////////////
 
   const fetchMenuItems = async () => {
     try {
       const response = await fetch('http://localhost:3333/getmenu');
       if (response.ok) {
         const data = await response.json();
-        console.log('Noodle type data',data)
+        console.log('Menu items data', data);
         setMenuItems(data);
       } else {
         console.error('Failed to fetch menu items');
@@ -167,8 +149,6 @@ function Basket() {
       console.error('Error fetching menu items:', error);
     }
   };
-  //////////////////////////////////////////
-  //สำหรับดึงค่าจากตารางเมนู/////////////////////
 
   const fetchNoodleMenuItems = async () => {
     try {
@@ -184,12 +164,9 @@ function Basket() {
     }
   };
 
-  
-
-
   const getNoodleTypeName = (id) => {
-   const noodle = noodleTypes.find(type => type.Noodle_type_id === id);
-   return noodle ? noodle.Noodle_type_name : 'ไม่ระบุ' 
+    const noodle = noodleTypes.find(type => type.Noodle_type_id === id);
+    return noodle ? noodle.Noodle_type_name : 'ไม่ระบุ';
   };
 
   const getSoupName = (id) => {
@@ -206,7 +183,6 @@ function Basket() {
     const size = sizes.find(s => s.Size_id === id);
     return size ? size.Size_name : 'ไม่ระบุ';
   };
-
 
   function getMenuName(Noodle_type_id, soup_id, meat_id, size_id) {
     const noodle_type_name = getNoodleTypeName(Noodle_type_id);
@@ -230,24 +206,17 @@ function Basket() {
 
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
-  
+
     try {
       const endpoint = itemToDelete.isNoodleMenu ? 
         `http://localhost:3333/deletenoodlemenu/${itemToDelete.Noodle_menu_id}` :
         `http://localhost:3333/deletemenu/${itemToDelete.Menu_id}`;
-  
+
       const response = await fetch(endpoint, {
-        method: 'PUT', // เปลี่ยนเป็น PUT สำหรับ soft delete
+        method: 'DELETE',
       });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-  
-      if (data.status === 'ok') {
-        // อัปเดต state
+
+      if (response.ok) {
         if (itemToDelete.isNoodleMenu) {
           setNoodlemenuItems(prevItems => prevItems.filter(item => item.Noodle_menu_id !== itemToDelete.Noodle_menu_id));
         } else {
@@ -255,15 +224,16 @@ function Basket() {
         }
         alert('ลบเมนูสำเร็จ');
       } else {
-        alert(`เกิดข้อผิดพลาดในการลบเมนู: ${data.message}`);
+        alert('เกิดข้อผิดพลาดในการลบเมนู');
       }
     } catch (error) {
       console.error('Error deleting menu item:', error);
-      alert(`เกิดข้อผิดพลาดในการลบเมนู: ${error.message}`);
+      alert('เกิดข้อผิดพลาดในการลบเมนู');
     }
-  
+
     handleCloseDialog();
   };
+
   if (!Array.isArray(noodleTypes) || noodleTypes.length === 0) {
     return <div>กำลังโหลดข้อมูล...</div>;
   }
@@ -280,13 +250,18 @@ function Basket() {
             <Link to={`/noodledetail/${item.Noodle_menu_id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
               <img src={`data:image/jpeg;base64,${item.Noodle_menu_picture}`} alt={item.Noodle_menu_name} style={styles.menuImage} />
               <div style={styles.menuInfo}>
-                <div>
-                  <h3>{getMenuName(item.Noodle_type_id, item.Soup_id, item.Meat_id, item.Size_id)}</h3>
-                  <p>ราคา: {item.Noodle_menu_price} บาท</p>
-                </div>
+                <h3 style={styles.menuInfoH3}>{getMenuName(item.Noodle_type_id, item.Soup_id, item.Meat_id, item.Size_id)}</h3>
+                <p>ราคา: {item.Noodle_menu_price} บาท</p>
               </div>
             </Link>
-            <DeleteImenu onDelete={() => handleDeleteClick(item, true)} />
+            <Button 
+              variant="outlined" 
+              startIcon={<DeleteIcon />} 
+              onClick={() => handleDeleteClick(item, true)}
+              style={{ position: 'absolute', bottom: '10px', right: '10px' }}
+            >
+              ลบเมนู
+            </Button>
           </div>
         ))}
         {menuItems.map((item) => (
@@ -298,7 +273,14 @@ function Basket() {
                 <p>ราคา:{item.Menu_price} บาท</p>
               </div>
             </Link>
-            <DeleteImenu onDelete={() => handleDeleteClick(item, false)} />
+            <Button 
+              variant="outlined" 
+              startIcon={<DeleteIcon />} 
+              onClick={() => handleDeleteClick(item, false)}
+              style={{ position: 'absolute', bottom: '10px', right: '10px' }}
+            >
+              ลบเมนู
+            </Button>
           </div>
         ))}
       </div>
